@@ -6,10 +6,12 @@ import { Search, MapPin, Star, ChevronRight, Bell, User, Menu, X } from "lucide-
 import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
 
 // Dynamically resolve Lucide icon by name string
-const DynamicIcon = ({ name, className }: { name: string; className?: string }) => {
-  const Icon = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[name] || LucideIcons.HelpCircle;
-  return <Icon className={className} />;
+const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
+  const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
+  const Icon = icons[name] || icons["HelpCircle"];
+  return <Icon className={className} style={style} />;
 };
+
 
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -262,40 +264,34 @@ export default function Home() {
         <section id="cta" className="px-5 md:px-8 py-6 md:py-10 max-w-5xl mx-auto">
           <div
             className="rounded-3xl p-8 md:p-14 text-center shadow-2xl relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg, #0f0f0f 0%, #0d3d30 60%, #1a1a1a 100%)" }}
+            style={{ background: "linear-gradient(135deg, #1aab8a 0%, #2abf9e 50%, #22d4ad 100%)" }}
           >
-            {/* Glow blobs */}
-            <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-25 pointer-events-none"
-              style={{ backgroundColor: "#2abf9e" }} />
-            <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full blur-3xl opacity-15 pointer-events-none"
-              style={{ backgroundColor: "#2abf9e" }} />
-
-            {/* Logo watermark */}
-            <div className="relative z-10 mb-5 flex justify-center">
-              <img src="/logoweb.png" alt="InChouf" className="w-14 md:w-16 opacity-50" style={{ filter: "brightness(0) invert(1)" }} />
-            </div>
+            {/* Subtle light blobs for depth */}
+            <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl opacity-30 pointer-events-none bg-white" />
+            <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none bg-white" />
 
             <div className="relative z-10">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-5">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-5 drop-shadow">
                 Own a spot in the mountains?
               </h2>
-              <p className="text-slate-300 text-base md:text-lg mb-7 md:mb-9 max-w-xl mx-auto leading-relaxed">
+              <p className="text-white/85 text-base md:text-lg mb-7 md:mb-9 max-w-xl mx-auto leading-relaxed">
                 Join InChouf and get discovered by thousands of locals and tourists looking for their next adventure in the Chouf.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
                 <button
-                  className="font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base transition-all shadow-lg hover:scale-105 active:scale-95"
-                  style={{ background: "#2abf9e", color: "#fff" }}
+                  className="font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base transition-all shadow-lg hover:scale-105 active:scale-95 bg-white"
+                  style={{ color: "#1aab8a" }}
                 >
                   Get Listed Today
                 </button>
-                <button className="border border-slate-600 text-white font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base hover:border-teal-500 hover:scale-105 transition-all">
+                <button className="border-2 border-white text-white font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base hover:bg-white/10 hover:scale-105 transition-all">
                   Learn More
                 </button>
               </div>
             </div>
           </div>
         </section>
+
       </main>
 
       {/* ── FOOTER ── */}
