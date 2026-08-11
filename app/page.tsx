@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import * as LucideIcons from "lucide-react";
 import { Search, MapPin, Star, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
 import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
@@ -62,7 +63,7 @@ export default function Home() {
       <nav className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100 md:px-8">
 
         {/* Logo */}
-        <a href="/" className="min-w-0 flex-shrink-0 flex items-center gap-2">
+        <Link href="/" className="min-w-0 flex-shrink-0 flex items-center gap-2">
           <img
             src="/logoweb.png"
             alt="InChouf pin"
@@ -71,7 +72,7 @@ export default function Home() {
           <span className="font-extrabold text-xl tracking-tight md:text-2xl" style={{ color: "#0f0f0f" }}>
             in<span style={{ color: "#2abf9e" }}>chouf</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-7 text-sm font-medium text-slate-600">
@@ -219,40 +220,44 @@ export default function Home() {
 
         {/* ── EXPLORE BY INTEREST ── */}
         <section id="categories" className="mx-auto max-w-7xl px-4 py-12 sm:px-5 md:px-8 md:py-16">
-          <div className="mb-6 flex items-end justify-between md:mb-8">
+          <div className="mb-6 flex items-end justify-between gap-4 md:mb-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Explore by Interest</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Explore by Category</h2>
               <p className="text-slate-500 text-sm mt-1">Browse what the Chouf has to offer</p>
             </div>
+            {categories.length > 8 && (
+              <a href="#" className="hidden md:flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">
+                View All <ChevronRight size={16} />
+              </a>
+            )}
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-40 animate-pulse rounded-lg bg-slate-200 sm:h-44 md:h-60" />
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="h-36 min-w-36 animate-pulse rounded-lg bg-white shadow-sm ring-1 ring-slate-100 md:min-w-0" />
               ))}
             </div>
           ) : categories.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
+            <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8">
               {categories.map((cat) => (
-                <div
+                <a
                   key={cat.category_id}
-                  className="group relative h-40 cursor-pointer overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:shadow-xl sm:h-44 md:h-60"
-                  style={{ background: "linear-gradient(145deg, #0f0f0f, #1a3a2e)" }}
+                  href={`#category-${cat.slug}`}
+                  className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
                 >
-                  {/* Teal glow on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
-                    style={{ background: "radial-gradient(ellipse at bottom, #2abf9e, transparent)" }}
-                  />
-                  <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-5">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                     <DynamicIcon
-                      name={cat.icon_name}
-                      className="w-7 h-7 mb-2.5 opacity-80 group-hover:scale-110 transition-transform duration-300"
+                      name={cat.icon_name || "HelpCircle"}
+                      className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
                       style={{ color: "#2abf9e" } as React.CSSProperties}
                     />
-                    <h3 className="text-base font-bold leading-tight text-white sm:text-lg md:text-xl">{cat.name}</h3>
                   </div>
-                </div>
+                  <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">{cat.name}</h3>
+                  <p className="mt-2 text-xs font-medium text-slate-400">
+                    {cat.place_count} {cat.place_count === 1 ? "place" : "places"}
+                  </p>
+                </a>
               ))}
             </div>
           ) : (
