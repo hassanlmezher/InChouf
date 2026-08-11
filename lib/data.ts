@@ -22,6 +22,73 @@ export type LocationWithCategory = {
   }
 }
 
+const fallbackCategories: Category[] = [
+  {
+    category_id: 'fallback-eat-drink',
+    name: 'Eat & Drink',
+    slug: 'eat-drink',
+    icon_name: 'Utensils',
+    parent_category_id: null,
+    place_count: 85,
+  },
+  {
+    category_id: 'fallback-basketball',
+    name: 'Basketball',
+    slug: 'basketball',
+    icon_name: 'CircleDot',
+    parent_category_id: null,
+    place_count: 12,
+  },
+  {
+    category_id: 'fallback-football',
+    name: 'Football',
+    slug: 'football',
+    icon_name: 'Goal',
+    parent_category_id: null,
+    place_count: 18,
+  },
+  {
+    category_id: 'fallback-gyms',
+    name: 'Gyms',
+    slug: 'gyms',
+    icon_name: 'Dumbbell',
+    parent_category_id: null,
+    place_count: 24,
+  },
+  {
+    category_id: 'fallback-sunset-spots',
+    name: 'Sunset Spots',
+    slug: 'sunset-spots',
+    icon_name: 'Sunset',
+    parent_category_id: null,
+    place_count: 15,
+  },
+  {
+    category_id: 'fallback-nature',
+    name: 'Nature',
+    slug: 'nature',
+    icon_name: 'Trees',
+    parent_category_id: null,
+    place_count: 32,
+  },
+  {
+    category_id: 'fallback-stays',
+    name: 'Stays',
+    slug: 'stays',
+    icon_name: 'House',
+    parent_category_id: null,
+    place_count: 27,
+  },
+  {
+    category_id: 'fallback-more',
+    name: 'More',
+    slug: 'more',
+    icon_name: 'MoreHorizontal',
+    parent_category_id: null,
+    place_count: 0,
+  },
+]
+
 export async function fetchMainCategories() {
   const { data: categories, error } = await supabase
     .from('categories')
@@ -30,7 +97,11 @@ export async function fetchMainCategories() {
 
   if (error) {
     console.error('Error fetching categories:', error)
-    return []
+    return fallbackCategories
+  }
+
+  if (!categories?.length) {
+    return fallbackCategories
   }
 
   const { data: locations, error: locationsError } = await supabase

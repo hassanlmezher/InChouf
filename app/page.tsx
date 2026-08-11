@@ -254,9 +254,11 @@ export default function Home() {
                     />
                   </div>
                   <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">{cat.name}</h3>
-                  <p className="mt-2 text-xs font-medium text-slate-400">
-                    {cat.place_count} {cat.place_count === 1 ? "place" : "places"}
-                  </p>
+                  {cat.place_count > 0 && (
+                    <p className="mt-2 text-xs font-medium text-slate-400">
+                      {cat.place_count} {cat.place_count === 1 ? "place" : "places"}
+                    </p>
+                  )}
                 </a>
               ))}
             </div>
