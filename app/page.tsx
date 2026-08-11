@@ -236,7 +236,7 @@ export default function Home() {
             <Search className="ml-2 flex-shrink-0 text-slate-400 sm:ml-3" size={20} />
             <input
               type="text"
-              placeholder="Search for restaurants, trails, sunsets…"
+              placeholder="Search spots"
               className="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 sm:px-2 md:py-3.5 md:text-base"
             />
             <button
@@ -276,13 +276,13 @@ export default function Home() {
               <div className="relative">
                 <div
                   ref={categoryScrollRef}
-                  className="category-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
+                  className="category-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-3 pt-2 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
                 >
                   {categories.slice(0, 7).map((cat) => (
                     <Link
                       key={cat.category_id}
                       href={`/category?slug=${encodeURIComponent(cat.slug)}`}
-                      className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
+                      className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 md:min-w-0"
                     >
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                         <DynamicIcon
@@ -301,7 +301,7 @@ export default function Home() {
                   ))}
                   <Link
                     href="/categories"
-                    className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
+                    className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 md:min-w-0"
                   >
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                       <DynamicIcon

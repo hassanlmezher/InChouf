@@ -78,7 +78,7 @@ export default function CategoriesPage() {
               <Link
                 key={category.category_id}
                 href={`/category?slug=${encodeURIComponent(category.slug)}`}
-                className="group flex h-36 flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                className="group flex h-36 flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
               >
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                   <DynamicIcon
