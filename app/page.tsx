@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import * as LucideIcons from "lucide-react";
-import { Search, MapPin, Star, ChevronRight, Bell, User, Menu, X } from "lucide-react";
+import { Search, MapPin, Star, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
 import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { AuthModal } from "@/components/AuthModal";
 
 // Dynamically resolve Lucide icon by name string
 const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
@@ -18,6 +21,18 @@ export default function Home() {
   const [featuredPicks, setFeaturedPicks] = useState<LocationWithCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  const handleLogin = () => {
+    setAuthModalOpen(true);
+  };
+
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -30,22 +45,30 @@ export default function Home() {
       setLoading(false);
     }
     loadData();
+
+    // Track auth state
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 font-sans">
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
       {/* ── NAVBAR ── */}
-      <nav className="flex items-center justify-between px-5 md:px-8 py-3 bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100">
+      <nav className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100 md:px-8">
 
         {/* Logo */}
-        <a href="/" className="flex-shrink-0 flex items-center gap-2.5">
+        <a href="/" className="min-w-0 flex-shrink-0 flex items-center gap-2">
           <img
             src="/logoweb.png"
             alt="InChouf pin"
-            className="h-9 md:h-10 w-auto object-contain"
+            className="h-8 w-auto object-contain md:h-10"
           />
-          <span className="font-extrabold text-xl md:text-2xl tracking-tight" style={{ color: "#0f0f0f" }}>
+          <span className="font-extrabold text-xl tracking-tight md:text-2xl" style={{ color: "#0f0f0f" }}>
             in<span style={{ color: "#2abf9e" }}>chouf</span>
           </span>
         </a>
@@ -59,16 +82,39 @@ export default function Home() {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex min-w-0 items-center gap-2 md:gap-3">
           <button className="hidden md:block bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-sm">
             Add a Place
           </button>
           <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors hidden md:flex">
             <Bell size={19} />
           </button>
-          <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors hidden md:flex">
-            <User size={19} />
-          </button>
+
+          {/* Desktop Auth Button */}
+          {user ? (
+            <div className="hidden md:flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#2abf9e" }}>
+                {(user.email?.[0] ?? "U").toUpperCase()}
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-red-500 transition-colors px-3 py-1.5 rounded-full hover:bg-red-50"
+              >
+                <LogOut size={15} />
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-white px-4 py-2 rounded-full transition-all shadow-sm"
+              style={{ backgroundColor: "#2abf9e" }}
+            >
+              <LogIn size={15} />
+              Log In
+            </button>
+          )}
+
           {/* Mobile hamburger */}
           <button
             className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors md:hidden"
@@ -81,21 +127,47 @@ export default function Home() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-slate-100 shadow-lg z-40 px-5 py-4 flex flex-col gap-4">
+        <div className="fixed left-0 right-0 top-16 z-40 flex max-h-[calc(100svh-4rem)] flex-col gap-4 overflow-y-auto border-b border-slate-100 bg-white px-5 py-4 shadow-xl md:hidden">
           <a href="#explore" className="text-teal-600 font-semibold text-base" onClick={() => setMobileMenuOpen(false)}>Explore</a>
           <a href="#categories" className="text-slate-700 font-medium text-base" onClick={() => setMobileMenuOpen(false)}>Categories</a>
           <a href="#picks" className="text-slate-700 font-medium text-base" onClick={() => setMobileMenuOpen(false)}>Top Picks</a>
           <a href="#cta" className="text-slate-700 font-medium text-base" onClick={() => setMobileMenuOpen(false)}>List Your Place</a>
-          <button className="w-full bg-teal-600 text-white py-2.5 rounded-full font-semibold mt-1">
+          <div className="border-t border-slate-100 pt-3 mt-1">
+            {user ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: "#2abf9e" }}>
+                    {(user.email?.[0] ?? "U").toUpperCase()}
+                  </div>
+                  <span className="truncate max-w-[160px]">{user.email}</span>
+                </div>
+                <button
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                  className="flex items-center gap-1 text-sm font-medium text-red-500"
+                >
+                  <LogOut size={14} /> Log Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { handleLogin(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center justify-center gap-2 text-white py-2.5 rounded-full font-semibold"
+                style={{ backgroundColor: "#2abf9e" }}
+              >
+                <LogIn size={16} /> Log In
+              </button>
+            )}
+          </div>
+          <button className="w-full bg-slate-900 text-white py-2.5 rounded-full font-semibold">
             Add a Place
           </button>
         </div>
       )}
 
-      <main id="explore" className="pb-16">
+      <main id="explore" className="pb-14 md:pb-16">
 
         {/* ── HERO ── */}
-        <section className="relative flex flex-col items-center text-center px-5 pt-14 pb-20 md:pt-24 md:pb-32 overflow-hidden min-h-[85vh] justify-center">
+        <section className="relative flex min-h-[calc(92svh-4rem)] flex-col items-center justify-center overflow-hidden px-4 pb-14 pt-12 text-center sm:px-5 md:min-h-[85vh] md:pb-32 md:pt-24">
 
           {/* Background video */}
           <video
@@ -117,24 +189,24 @@ export default function Home() {
             />
           </div>
 
-          <h1 className="relative text-3xl sm:text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-4 md:mb-5 max-w-3xl leading-tight drop-shadow-lg">
+          <h1 className="relative mb-4 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow-lg sm:text-4xl md:mb-5 md:text-6xl">
             Find Your Next Vibe{" "}
             <span style={{ color: "#2abf9e" }}>in Chouf</span>
           </h1>
-          <p className="relative text-base md:text-lg text-slate-200 mb-8 md:mb-10 max-w-xl px-2 leading-relaxed drop-shadow">
+          <p className="relative mb-7 max-w-xl px-1 text-base leading-relaxed text-slate-200 drop-shadow md:mb-10 md:text-lg">
             Discover the best spots for sports, dining, and nature in the heart of the Lebanese mountains.
           </p>
 
           {/* Search bar */}
-          <div className="relative w-full max-w-2xl flex items-center bg-white rounded-full shadow-2xl p-1.5 md:p-2 gap-2">
-            <Search className="text-slate-400 ml-3 flex-shrink-0" size={20} />
+          <div className="relative flex w-full max-w-2xl items-center gap-1.5 rounded-full bg-white p-1.5 shadow-2xl sm:gap-2 md:p-2">
+            <Search className="ml-2 flex-shrink-0 text-slate-400 sm:ml-3" size={20} />
             <input
               type="text"
               placeholder="Search for restaurants, trails, sunsets…"
-              className="flex-1 min-w-0 py-2.5 md:py-3.5 px-2 bg-transparent outline-none text-slate-700 text-sm md:text-base placeholder:text-slate-400"
+              className="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 sm:px-2 md:py-3.5 md:text-base"
             />
             <button
-              className="flex-shrink-0 text-white px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold transition-all shadow-md"
+              className="flex-shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all sm:px-5 md:px-7 md:py-3 md:text-base"
               style={{ background: "linear-gradient(135deg, #2abf9e, #1a9e83)" }}
             >
               Explore<span className="hidden sm:inline"> Now</span>
@@ -146,8 +218,8 @@ export default function Home() {
 
 
         {/* ── EXPLORE BY INTEREST ── */}
-        <section id="categories" className="px-5 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-6 md:mb-8">
+        <section id="categories" className="mx-auto max-w-7xl px-4 py-12 sm:px-5 md:px-8 md:py-16">
+          <div className="mb-6 flex items-end justify-between md:mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Explore by Interest</h2>
               <p className="text-slate-500 text-sm mt-1">Browse what the Chouf has to offer</p>
@@ -155,44 +227,44 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-44 md:h-60 rounded-2xl bg-slate-200 animate-pulse" />
+                <div key={i} className="h-40 animate-pulse rounded-lg bg-slate-200 sm:h-44 md:h-60" />
               ))}
             </div>
           ) : categories.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
               {categories.map((cat) => (
                 <div
                   key={cat.category_id}
-                  className="group relative h-44 md:h-60 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
+                  className="group relative h-40 cursor-pointer overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:shadow-xl sm:h-44 md:h-60"
                   style={{ background: "linear-gradient(145deg, #0f0f0f, #1a3a2e)" }}
                 >
                   {/* Teal glow on hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
                     style={{ background: "radial-gradient(ellipse at bottom, #2abf9e, transparent)" }}
                   />
-                  <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                  <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-5">
                     <DynamicIcon
                       name={cat.icon_name}
                       className="w-7 h-7 mb-2.5 opacity-80 group-hover:scale-110 transition-transform duration-300"
                       style={{ color: "#2abf9e" } as React.CSSProperties}
                     />
-                    <h3 className="text-white font-bold text-lg md:text-xl leading-tight">{cat.name}</h3>
+                    <h3 className="text-base font-bold leading-tight text-white sm:text-lg md:text-xl">{cat.name}</h3>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-slate-400 italic py-10 bg-white rounded-2xl text-center shadow-sm border border-slate-100">
+            <div className="rounded-lg border border-slate-100 bg-white py-10 text-center italic text-slate-400 shadow-sm">
               No categories found — add some to your database to see them here.
             </div>
           )}
         </section>
 
         {/* ── TOP PICKS ── */}
-        <section id="picks" className="px-5 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-6 md:mb-8">
+        <section id="picks" className="mx-auto max-w-7xl px-4 py-12 sm:px-5 md:px-8 md:py-16">
+          <div className="mb-6 flex items-end justify-between gap-4 md:mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Top Picks for Today</h2>
               <p className="text-slate-500 text-sm mt-1">Hand-curated experiences by our local team.</p>
@@ -203,17 +275,17 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="rounded-2xl bg-slate-200 animate-pulse h-72" />
+                <div key={i} className="h-72 animate-pulse rounded-lg bg-slate-200" />
               ))}
             </div>
           ) : featuredPicks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
               {featuredPicks.map((loc) => (
                 <div
                   key={loc.location_id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100"
+                  className="overflow-hidden rounded-lg border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   {/* Image */}
                   <div className="relative w-full overflow-hidden bg-slate-100" style={{ aspectRatio: "4/3" }}>
@@ -229,7 +301,7 @@ export default function Home() {
                       </div>
                     )}
                     {loc.categories?.name && (
-                      <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md" style={{ backgroundColor: "#2abf9e" }}>
+                      <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full px-3 py-1 text-xs font-bold text-white shadow-md" style={{ backgroundColor: "#2abf9e" }}>
                         {loc.categories.name}
                       </span>
                     )}
@@ -238,38 +310,34 @@ export default function Home() {
                   {/* Card body */}
                   <div className="p-4 md:p-5">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-bold text-base md:text-lg text-slate-900 leading-snug">{loc.name}</h3>
+                      <h3 className="min-w-0 break-words text-base font-bold leading-snug text-slate-900 md:text-lg">{loc.name}</h3>
                       <div className="flex items-center gap-0.5 text-amber-500 text-xs font-semibold bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">
                         <Star size={11} className="fill-current" />
                         4.9
                       </div>
                     </div>
-                    <p className="text-slate-500 text-sm mb-4 line-clamp-2 leading-relaxed">{loc.description}</p>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-3 border-t border-slate-50">
-                      <MapPin size={13} style={{ color: "#2abf9e" }} />
-                      {loc.address_or_area}
+                    <p className="mb-4 text-sm leading-relaxed text-slate-500 line-clamp-2">{loc.description}</p>
+                    <div className="flex items-start gap-1.5 border-t border-slate-50 pt-3 text-xs text-slate-400">
+                      <MapPin size={13} className="mt-0.5 flex-shrink-0" style={{ color: "#2abf9e" }} />
+                      <span className="min-w-0 break-words">{loc.address_or_area}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-slate-400 italic py-10 bg-white rounded-2xl text-center shadow-sm border border-slate-100">
+            <div className="rounded-lg border border-slate-100 bg-white py-10 text-center italic text-slate-400 shadow-sm">
               No featured picks yet — mark some locations as featured in your database.
             </div>
           )}
         </section>
 
         {/* ── CTA ── */}
-        <section id="cta" className="px-5 md:px-8 py-6 md:py-10 max-w-5xl mx-auto">
+        <section id="cta" className="mx-auto max-w-5xl px-4 py-6 sm:px-5 md:px-8 md:py-10">
           <div
-            className="rounded-3xl p-8 md:p-14 text-center shadow-2xl relative overflow-hidden"
+            className="relative overflow-hidden rounded-lg p-6 text-center shadow-2xl sm:p-8 md:p-14"
             style={{ background: "linear-gradient(135deg, #1aab8a 0%, #2abf9e 50%, #22d4ad 100%)" }}
           >
-            {/* Subtle light blobs for depth */}
-            <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl opacity-30 pointer-events-none bg-white" />
-            <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none bg-white" />
-
             <div className="relative z-10">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-5 drop-shadow">
                 Own a spot in the mountains?
@@ -277,14 +345,14 @@ export default function Home() {
               <p className="text-white/85 text-base md:text-lg mb-7 md:mb-9 max-w-xl mx-auto leading-relaxed">
                 Join InChouf and get discovered by thousands of locals and tourists looking for their next adventure in the Chouf.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
+              <div className="flex flex-col justify-center gap-3 sm:flex-row md:gap-4">
                 <button
-                  className="font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base transition-all shadow-lg hover:scale-105 active:scale-95 bg-white"
+                  className="rounded-full bg-white px-7 py-3 text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95 md:px-9 md:py-3.5 md:text-base"
                   style={{ color: "#1aab8a" }}
                 >
                   Get Listed Today
                 </button>
-                <button className="border-2 border-white text-white font-bold px-7 md:px-9 py-3 md:py-3.5 rounded-full text-sm md:text-base hover:bg-white/10 hover:scale-105 transition-all">
+                <button className="rounded-full border-2 border-white px-7 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:bg-white/10 md:px-9 md:py-3.5 md:text-base">
                   Learn More
                 </button>
               </div>
@@ -295,7 +363,7 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white border-t border-slate-100 py-10 md:py-14 px-5 md:px-8">
+      <footer className="border-t border-slate-100 bg-white px-4 py-10 sm:px-5 md:px-8 md:py-14">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
@@ -332,7 +400,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400 gap-3">
           <p>© 2026 InChouf. All rights reserved.</p>
           <div className="flex gap-4">
-            <span className="cursor-pointer hover:text-slate-600 transition-colors">🌍 EN</span>
+            <span className="cursor-pointer transition-colors hover:text-slate-600">EN</span>
             <span className="cursor-pointer hover:text-slate-600 transition-colors">Share</span>
           </div>
         </div>
