@@ -343,21 +343,6 @@ export default function Home() {
                 )}
               </div>
 
-              {(canScrollCategoriesLeft || canScrollCategoriesRight) && (
-                <p className="mt-2 flex items-center justify-center gap-1 text-xs font-semibold text-teal-700 md:hidden">
-                  {canScrollCategoriesRight ? (
-                    <>
-                      Swipe to see more categories
-                      <ChevronRight className="animate-pulse" size={15} aria-hidden="true" />
-                    </>
-                  ) : (
-                    <>
-                      <ChevronLeft size={15} aria-hidden="true" />
-                      Swipe back for previous categories
-                    </>
-                  )}
-                </p>
-              )}
             </div>
           ) : (
             <div className="rounded-lg border border-slate-100 bg-white py-10 text-center italic text-slate-400 shadow-sm">
