@@ -22,7 +22,7 @@ export type LocationWithCategory = {
   }
 }
 
-const fallbackCategories: Category[] = [
+export const fallbackCategories: Category[] = [
   {
     category_id: 'fallback-eat-drink',
     name: 'Eat & Drink',
@@ -79,17 +79,9 @@ const fallbackCategories: Category[] = [
     parent_category_id: null,
     place_count: 27,
   },
-  {
-    category_id: 'fallback-more',
-    name: 'More',
-    slug: 'more',
-    icon_name: 'MoreHorizontal',
-    parent_category_id: null,
-    place_count: 0,
-  },
 ]
 
-export async function fetchMainCategories() {
+export async function fetchMainCategories(): Promise<Category[]> {
   const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
@@ -128,6 +120,36 @@ export async function fetchMainCategories() {
     ...category,
     place_count: countsByCategory.get(category.category_id) ?? 0,
   })) as Category[]
+}
+
+export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
+  const categories = await fetchMainCategories()
+  return categories.find((category) => category.slug === slug) ?? null
+}
+
+export async function fetchLocationsByCategorySlug(slug: string): Promise<LocationWithCategory[]> {
+  const category = await fetchCategoryBySlug(slug)
+
+  if (!category || category.category_id.startsWith('fallback-')) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('locations')
+    .select(`
+      *,
+      categories (
+        name
+      )
+    `)
+    .eq('category_id', category.category_id)
+
+  if (error) {
+    console.error('Error fetching category locations:', error)
+    return []
+  }
+
+  return data as LocationWithCategory[]
 }
 
 export async function fetchFeaturedPicks() {

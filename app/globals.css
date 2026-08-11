@@ -34,3 +34,32 @@ html {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.category-scrollbar {
+  scrollbar-color: #5eead4 #e2e8f0;
+  scrollbar-width: thin;
+}
+
+.category-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.category-scrollbar::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 9999px;
+}
+
+.category-scrollbar::-webkit-scrollbar-thumb {
+  background: #5eead4;
+  border-radius: 9999px;
+}
+
+@media (min-width: 48rem) {
+  .category-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .category-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

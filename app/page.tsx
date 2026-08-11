@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import * as LucideIcons from "lucide-react";
-import { Search, MapPin, Star, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
+import { Search, MapPin, Star, ChevronLeft, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
 import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -24,6 +24,9 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [canScrollCategoriesLeft, setCanScrollCategoriesLeft] = useState(false);
+  const [canScrollCategoriesRight, setCanScrollCategoriesRight] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = () => {
     setAuthModalOpen(true);
@@ -54,6 +57,36 @@ export default function Home() {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const scroller = categoryScrollRef.current;
+    if (!scroller || loading) return;
+
+    const updateScrollCues = () => {
+      const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+      setCanScrollCategoriesLeft(scroller.scrollLeft > 4);
+      setCanScrollCategoriesRight(maxScrollLeft - scroller.scrollLeft > 4);
+    };
+
+    updateScrollCues();
+    scroller.addEventListener("scroll", updateScrollCues, { passive: true });
+    window.addEventListener("resize", updateScrollCues);
+
+    return () => {
+      scroller.removeEventListener("scroll", updateScrollCues);
+      window.removeEventListener("resize", updateScrollCues);
+    };
+  }, [categories, loading]);
+
+  const scrollCategories = (direction: "left" | "right") => {
+    const scroller = categoryScrollRef.current;
+    if (!scroller) return;
+
+    scroller.scrollBy({
+      left: direction === "right" ? 160 : -160,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50 font-sans">
@@ -225,10 +258,10 @@ export default function Home() {
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Explore by Category</h2>
               <p className="text-slate-500 text-sm mt-1">Browse what the Chouf has to offer</p>
             </div>
-            {categories.length > 8 && (
-              <a href="#" className="hidden md:flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">
+            {categories.length > 7 && (
+              <Link href="/categories" className="hidden md:flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">
                 View All <ChevronRight size={16} />
-              </a>
+              </Link>
             )}
           </div>
 
@@ -239,28 +272,92 @@ export default function Home() {
               ))}
             </div>
           ) : categories.length > 0 ? (
-            <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8">
-              {categories.map((cat) => (
-                <a
-                  key={cat.category_id}
-                  href={`#category-${cat.slug}`}
-                  className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
+            <div>
+              <div className="relative">
+                <div
+                  ref={categoryScrollRef}
+                  className="category-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
                 >
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
-                    <DynamicIcon
-                      name={cat.icon_name || "HelpCircle"}
-                      className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
-                      style={{ color: "#2abf9e" } as React.CSSProperties}
-                    />
-                  </div>
-                  <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">{cat.name}</h3>
-                  {cat.place_count > 0 && (
-                    <p className="mt-2 text-xs font-medium text-slate-400">
-                      {cat.place_count} {cat.place_count === 1 ? "place" : "places"}
-                    </p>
+                  {categories.slice(0, 7).map((cat) => (
+                    <Link
+                      key={cat.category_id}
+                      href={`/category?slug=${encodeURIComponent(cat.slug)}`}
+                      className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
+                    >
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
+                        <DynamicIcon
+                          name={cat.icon_name || "HelpCircle"}
+                          className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
+                          style={{ color: "#2abf9e" } as React.CSSProperties}
+                        />
+                      </div>
+                      <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">{cat.name}</h3>
+                      {cat.place_count > 0 && (
+                        <p className="mt-2 text-xs font-medium text-slate-400">
+                          {cat.place_count} {cat.place_count === 1 ? "place" : "places"}
+                        </p>
+                      )}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/categories"
+                    className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 md:min-w-0"
+                  >
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
+                      <DynamicIcon
+                        name="MoreHorizontal"
+                        className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
+                        style={{ color: "#2abf9e" } as React.CSSProperties}
+                      />
+                    </div>
+                    <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">More</h3>
+                  </Link>
+                </div>
+
+                {canScrollCategoriesLeft && (
+                  <>
+                    <div className="pointer-events-none absolute inset-y-0 -left-4 w-14 bg-linear-to-r from-slate-50 via-slate-50/90 to-transparent md:hidden" />
+                    <button
+                      type="button"
+                      onClick={() => scrollCategories("left")}
+                      aria-label="Scroll categories left"
+                      className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95 md:hidden"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                  </>
+                )}
+
+                {canScrollCategoriesRight && (
+                  <>
+                    <div className="pointer-events-none absolute inset-y-0 -right-4 w-16 bg-linear-to-l from-slate-50 via-slate-50/90 to-transparent md:hidden" />
+                    <button
+                      type="button"
+                      onClick={() => scrollCategories("right")}
+                      aria-label="Scroll categories right"
+                      className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95 md:hidden"
+                    >
+                      <ChevronRight className="animate-pulse" size={20} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {(canScrollCategoriesLeft || canScrollCategoriesRight) && (
+                <p className="mt-2 flex items-center justify-center gap-1 text-xs font-semibold text-teal-700 md:hidden">
+                  {canScrollCategoriesRight ? (
+                    <>
+                      Swipe to see more categories
+                      <ChevronRight className="animate-pulse" size={15} aria-hidden="true" />
+                    </>
+                  ) : (
+                    <>
+                      <ChevronLeft size={15} aria-hidden="true" />
+                      Swipe back for previous categories
+                    </>
                   )}
-                </a>
-              ))}
+                </p>
+              )}
             </div>
           ) : (
             <div className="rounded-lg border border-slate-100 bg-white py-10 text-center italic text-slate-400 shadow-sm">
