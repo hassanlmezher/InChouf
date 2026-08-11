@@ -282,7 +282,7 @@ export default function Home() {
                     <Link
                       key={cat.category_id}
                       href={`/category?slug=${encodeURIComponent(cat.slug)}`}
-                      className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 md:min-w-0"
+                      className="category-option group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none md:min-w-0"
                     >
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                         <DynamicIcon
@@ -301,7 +301,7 @@ export default function Home() {
                   ))}
                   <Link
                     href="/categories"
-                    className="group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500 md:min-w-0"
+                    className="category-option group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none md:min-w-0"
                   >
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                       <DynamicIcon
