@@ -6,6 +6,7 @@ export type Category = {
   slug: string
   icon_name: string
   parent_category_id: string | null
+  place_count: number
 }
 
 export type LocationWithCategory = {
@@ -22,17 +23,40 @@ export type LocationWithCategory = {
 }
 
 export async function fetchMainCategories() {
-  const { data, error } = await supabase
+  const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
-    .is('parent_category_id', null)
+    .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching main categories:', error)
+    console.error('Error fetching categories:', error)
     return []
   }
 
-  return data as Category[]
+  const { data: locations, error: locationsError } = await supabase
+    .from('locations')
+    .select('category_id')
+
+  if (locationsError) {
+    console.error('Error fetching category counts:', locationsError)
+  }
+
+  const countsByCategory = new Map<string, number>()
+  locations?.forEach((location) => {
+    if (!location.category_id) {
+      return
+    }
+
+    countsByCategory.set(
+      location.category_id,
+      (countsByCategory.get(location.category_id) ?? 0) + 1
+    )
+  })
+
+  return categories.map((category) => ({
+    ...category,
+    place_count: countsByCategory.get(category.category_id) ?? 0,
+  })) as Category[]
 }
 
 export async function fetchFeaturedPicks() {
