@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "in-chouf",
     "public": "out",
     "ignore": [
       "firebase.json",
