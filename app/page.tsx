@@ -276,7 +276,7 @@ export default function Home() {
               <div className="relative">
                 <div
                   ref={categoryScrollRef}
-                  className="category-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
+                  className="category-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
                 >
                   {categories.slice(0, 7).map((cat) => (
                     <Link
