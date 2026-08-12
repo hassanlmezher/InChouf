@@ -16,6 +16,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -29,6 +30,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setFullName("");
         setError(null);
         setSuccess(null);
+        setResending(false);
         setIsLogin(true);
         onClose();
       }
@@ -46,6 +48,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFullName("");
     setError(null);
     setSuccess(null);
+    setResending(false);
     setIsLogin(true);
     onClose();
   };
@@ -56,6 +59,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFullName("");
     setError(null);
     setSuccess(null);
+    setResending(false);
   };
 
   const getErrorMessage = (err: unknown) => {
@@ -108,13 +112,45 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         setPassword("");
         setSuccess(
-          `We sent a confirmation link to ${normalizedEmail}. Open it to finish creating your account.`,
+          `If ${normalizedEmail} can receive a confirmation email, it should arrive shortly. Check spam or tap resend below.`,
         );
       }
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resendConfirmation = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setError("Enter your email address first.");
+      return;
+    }
+
+    setResending(true);
+    setError(null);
+
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: normalizedEmail,
+        options: {
+          emailRedirectTo: getAuthCallbackUrl(),
+        },
+      });
+
+      if (resendError) throw resendError;
+
+      setSuccess(
+        `We requested another confirmation email for ${normalizedEmail}. Check your inbox and spam folder.`,
+      );
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -167,7 +203,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {success && (
             <div role="status" className="mb-6 flex items-start gap-2.5 p-3 bg-teal-50 border border-teal-100 text-teal-800 text-sm rounded-xl">
               <CircleCheck className="mt-0.5 shrink-0" size={18} />
-              <span>{success}</span>
+              <span className="min-w-0">
+                {success}
+                {!isLogin && (
+                  <button
+                    type="button"
+                    onClick={resendConfirmation}
+                    disabled={loading || resending}
+                    className="mt-3 block text-left text-sm font-bold text-teal-700 underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {resending ? "Resending..." : "Resend confirmation email"}
+                  </button>
+                )}
+              </span>
             </div>
           )}
 
