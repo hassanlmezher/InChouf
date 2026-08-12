@@ -3,10 +3,22 @@
     "site": "in-chouf",
     "public": "out",
     "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/api/auth/send-signup-code",
+        "function": "sendSignupCode"
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default"
+    }
+  ]
 }
