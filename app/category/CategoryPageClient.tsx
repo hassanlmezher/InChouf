@@ -7,6 +7,7 @@ import * as LucideIcons from "lucide-react";
 import { ArrowLeft, Compass, MapPin, Search, Star } from "lucide-react";
 import { Category, LocationWithCategory, fetchCategoryBySlug, fetchLocationsByCategorySlug } from "@/lib/data";
 import { getCategoryIconName } from "@/lib/category-icons";
+import { getCategoryVideoSrc } from "@/lib/category-videos";
 
 const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
   const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
@@ -64,9 +65,18 @@ export default function CategoryPageClient() {
         ) : category ? (
           <>
             <header className="relative -mx-4 mt-3 overflow-hidden bg-slate-950 px-4 py-10 text-white sm:-mx-5 sm:px-5 md:mx-0 md:rounded-lg md:px-8 md:py-12">
-              <div className="absolute inset-0 opacity-70" style={{ background: "linear-gradient(135deg, #0f172a 0%, #12352f 52%, #1a9e83 100%)" }} />
-              <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-teal-300/20 blur-3xl" />
-              <div className="absolute -bottom-28 left-8 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+              <video
+                key={category.slug}
+                className="absolute inset-0 h-full w-full object-cover"
+                src={getCategoryVideoSrc(category)}
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-hidden="true"
+              />
+              <div className="absolute inset-0 bg-linear-to-r from-slate-950/90 via-slate-950/65 to-slate-950/25" />
+              <div className="absolute inset-0 bg-linear-to-t from-slate-950/55 via-transparent to-slate-950/20" />
 
               <div className="relative grid gap-8 md:grid-cols-[minmax(0,1fr)_22rem] md:items-end">
                 <div className="min-w-0">
