@@ -117,9 +117,9 @@ export default function Home() {
 
         {/* Right actions */}
         <div className="flex min-w-0 items-center gap-2 md:gap-3">
-          <button className="hidden md:block bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-sm">
+          <Link href="/list-your-place" className="hidden rounded-full bg-teal-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-700 active:bg-teal-800 md:block">
             Add a Place
-          </button>
+          </Link>
           <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors hidden md:flex">
             <Bell size={19} />
           </button>
@@ -192,9 +192,13 @@ export default function Home() {
               </button>
             )}
           </div>
-          <button className="w-full bg-slate-900 text-white py-2.5 rounded-full font-semibold">
+          <Link
+            href="/list-your-place"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full rounded-full bg-slate-900 py-2.5 text-center font-semibold text-white"
+          >
             Add a Place
-          </button>
+          </Link>
         </div>
       )}
 
@@ -435,15 +439,16 @@ export default function Home() {
                 Join InChouf and get discovered by thousands of locals and tourists looking for their next adventure in the Chouf.
               </p>
               <div className="flex flex-col justify-center gap-3 sm:flex-row md:gap-4">
-                <button
+                <Link
+                  href="/list-your-place"
                   className="rounded-full bg-white px-7 py-3 text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95 md:px-9 md:py-3.5 md:text-base"
                   style={{ color: "#1aab8a" }}
                 >
                   Get Listed Today
-                </button>
-                <button className="rounded-full border-2 border-white px-7 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:bg-white/10 md:px-9 md:py-3.5 md:text-base">
+                </Link>
+                <Link href="/business-subscription" className="rounded-full border-2 border-white px-7 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:bg-white/10 md:px-9 md:py-3.5 md:text-base">
                   Learn More
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -468,9 +473,14 @@ export default function Home() {
           <div>
             <h4 className="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wide">Quick Links</h4>
             <ul className="space-y-2.5 text-sm text-slate-500">
-              {["About Us", "Contact", "Add a Place", "Privacy Policy"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="hover:text-teal-600 transition-colors">{link}</a>
+              {[
+                { label: "About Us", href: "#" },
+                { label: "Contact", href: "#" },
+                { label: "Add a Place", href: "/list-your-place" },
+                { label: "Privacy Policy", href: "#" },
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="hover:text-teal-600 transition-colors">{link.label}</Link>
                 </li>
               ))}
             </ul>
