@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getAuthCallbackUrl } from "@/lib/site";
 import { X, Mail, Lock, User as UserIcon, Loader2, CircleCheck } from "lucide-react";
 
 interface AuthModalProps {
@@ -95,7 +96,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             data: {
               full_name: fullName.trim(),
             },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: getAuthCallbackUrl(),
           },
         });
         if (signUpError) throw signUpError;
