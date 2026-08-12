@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as LucideIcons from "lucide-react";
 import { ArrowLeft, Search } from "lucide-react";
 import { Category, fetchMainCategories } from "@/lib/data";
+import { getCategoryIconName } from "@/lib/category-icons";
 
 const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
   const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
@@ -82,7 +83,7 @@ export default function CategoriesPage() {
               >
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                   <DynamicIcon
-                    name={category.icon_name || "HelpCircle"}
+                    name={getCategoryIconName(category.icon_name)}
                     className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
                     style={{ color: "#2abf9e" } as React.CSSProperties}
                   />

@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import * as LucideIcons from "lucide-react";
 import { ArrowLeft, Compass, MapPin, Search, Star } from "lucide-react";
 import { Category, LocationWithCategory, fetchCategoryBySlug, fetchLocationsByCategorySlug } from "@/lib/data";
+import { getCategoryIconName } from "@/lib/category-icons";
 
 const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
   const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
@@ -71,7 +72,7 @@ export default function CategoryPageClient() {
                 <div className="min-w-0">
                   <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/14 shadow-lg shadow-black/10 backdrop-blur">
                     <DynamicIcon
-                      name={category.icon_name || "HelpCircle"}
+                      name={getCategoryIconName(category.icon_name)}
                       className="h-9 w-9"
                       style={{ color: "#7ee9d1" } as React.CSSProperties}
                     />

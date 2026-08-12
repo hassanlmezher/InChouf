@@ -42,36 +42,17 @@ export default function BusinessSubscriptionPage() {
           Back
         </Link>
 
-        <section className="grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
-          <div className="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-8 md:p-10">
-            <p className="text-sm font-bold uppercase tracking-wide text-teal-600">For Chouf businesses</p>
-            <h1 className="mt-3 text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl md:text-5xl">
-              Get discovered by people looking for their next stop in the mountains.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-500 md:text-lg">
-              A paid InChouf subscription helps your restaurant, guesthouse, sports venue, trail experience, or local spot show up where visitors are already browsing.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/list-your-place" className="inline-flex items-center justify-center rounded-full bg-teal-600 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 active:scale-95">
-                Get Listed Today
-              </Link>
-              <Link href="/" className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:border-teal-100 hover:text-teal-700">
-                Explore InChouf
-              </Link>
-            </div>
-          </div>
-
-          <aside className="rounded-lg bg-slate-900 p-6 text-white shadow-lg sm:p-8">
+        <section>
+          <aside className="rounded-lg bg-slate-900 p-6 text-white shadow-lg sm:p-8 md:p-10">
             <div className="flex items-center gap-2 text-teal-200">
               <Star className="fill-current" size={19} />
               <span className="text-sm font-bold uppercase tracking-wide">Subscription value</span>
             </div>
-            <p className="mt-5 text-4xl font-extrabold">Be easier to find.</p>
-            <p className="mt-4 text-sm leading-relaxed text-slate-300">
+            <p className="mt-5 text-4xl font-extrabold leading-tight md:text-5xl">Be easier to find.</p>
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-300 md:text-base">
               Your listing gives visitors one clear place to understand what you offer, where you are, and why they should choose you today.
             </p>
-            <div className="mt-7 rounded-lg bg-white/10 p-4">
+            <div className="mt-7 max-w-3xl rounded-lg bg-white/10 p-4">
               <div className="flex items-center gap-2 text-teal-100">
                 <BarChart3 size={18} />
                 <span className="text-sm font-bold">Built for visibility</span>

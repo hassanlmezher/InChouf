@@ -1,13 +1,15 @@
 import { supabase } from './supabase'
 
 export type Category = {
-  category_id: string
+  category_id: number
   name: string
   slug: string
-  icon_name: string
-  parent_category_id: string | null
+  icon_name: string | null
+  parent_category_id: number | null
   place_count: number
 }
+
+type CategoryRow = Omit<Category, 'place_count'>
 
 export type LocationWithCategory = {
   location_id: string
@@ -16,84 +18,27 @@ export type LocationWithCategory = {
   address_or_area: string
   main_image_url: string
   is_featured: boolean
-  category_id: string
+  category_id: number
   categories: {
     name: string
   }
 }
 
-export const fallbackCategories: Category[] = [
-  {
-    category_id: 'fallback-eat-drink',
-    name: 'Eat & Drink',
-    slug: 'eat-drink',
-    icon_name: 'Utensils',
-    parent_category_id: null,
-    place_count: 85,
-  },
-  {
-    category_id: 'fallback-basketball',
-    name: 'Basketball',
-    slug: 'basketball',
-    icon_name: 'CircleDot',
-    parent_category_id: null,
-    place_count: 12,
-  },
-  {
-    category_id: 'fallback-football',
-    name: 'Football',
-    slug: 'football',
-    icon_name: 'Goal',
-    parent_category_id: null,
-    place_count: 18,
-  },
-  {
-    category_id: 'fallback-gyms',
-    name: 'Gyms',
-    slug: 'gyms',
-    icon_name: 'Dumbbell',
-    parent_category_id: null,
-    place_count: 24,
-  },
-  {
-    category_id: 'fallback-sunset-spots',
-    name: 'Sunset Spots',
-    slug: 'sunset-spots',
-    icon_name: 'Sunset',
-    parent_category_id: null,
-    place_count: 15,
-  },
-  {
-    category_id: 'fallback-nature',
-    name: 'Nature',
-    slug: 'nature',
-    icon_name: 'Trees',
-    parent_category_id: null,
-    place_count: 32,
-  },
-  {
-    category_id: 'fallback-stays',
-    name: 'Stays',
-    slug: 'stays',
-    icon_name: 'House',
-    parent_category_id: null,
-    place_count: 27,
-  },
-]
-
 export async function fetchMainCategories(): Promise<Category[]> {
-  const { data: categories, error } = await supabase
+  const { data: categoryRows, error } = await supabase
     .from('categories')
-    .select('*')
-    .order('name', { ascending: true })
+    .select('category_id, name, slug, icon_name, parent_category_id')
+    .order('category_id', { ascending: true })
 
   if (error) {
     console.error('Error fetching categories:', error)
-    return fallbackCategories
+    return []
   }
 
-  if (!categories?.length) {
-    return fallbackCategories
+  const categories = (categoryRows ?? []) as CategoryRow[]
+
+  if (categories.length === 0) {
+    return []
   }
 
   const { data: locations, error: locationsError } = await supabase
@@ -104,9 +49,9 @@ export async function fetchMainCategories(): Promise<Category[]> {
     console.error('Error fetching category counts:', locationsError)
   }
 
-  const countsByCategory = new Map<string, number>()
+  const countsByCategory = new Map<number, number>()
   locations?.forEach((location) => {
-    if (!location.category_id) {
+    if (typeof location.category_id !== 'number') {
       return
     }
 
@@ -116,10 +61,23 @@ export async function fetchMainCategories(): Promise<Category[]> {
     )
   })
 
+  // Parent categories include the places assigned to their direct children.
+  categories.forEach((category) => {
+    if (category.parent_category_id === null) {
+      return
+    }
+
+    const childCount = countsByCategory.get(category.category_id) ?? 0
+    countsByCategory.set(
+      category.parent_category_id,
+      (countsByCategory.get(category.parent_category_id) ?? 0) + childCount
+    )
+  })
+
   return categories.map((category) => ({
     ...category,
     place_count: countsByCategory.get(category.category_id) ?? 0,
-  })) as Category[]
+  }))
 }
 
 export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
@@ -130,7 +88,7 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
 export async function fetchLocationsByCategorySlug(slug: string): Promise<LocationWithCategory[]> {
   const category = await fetchCategoryBySlug(slug)
 
-  if (!category || category.category_id.startsWith('fallback-')) {
+  if (!category) {
     return []
   }
 

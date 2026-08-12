@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as LucideIcons from "lucide-react";
 import { Search, MapPin, Star, ChevronLeft, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
 import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
+import { getCategoryIconName } from "@/lib/category-icons";
 import { supabase } from "@/lib/supabase";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { AuthModal } from "@/components/AuthModal";
@@ -290,7 +291,7 @@ export default function Home() {
                     >
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                         <DynamicIcon
-                          name={cat.icon_name || "HelpCircle"}
+                          name={getCategoryIconName(cat.icon_name)}
                           className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
                           style={{ color: "#2abf9e" } as React.CSSProperties}
                         />
