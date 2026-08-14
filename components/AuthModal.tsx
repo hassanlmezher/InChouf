@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getAuthCallbackUrl } from "@/lib/site";
 import { X, Mail, Lock, User as UserIcon, Loader2, CircleCheck, KeyRound } from "lucide-react";
 
 interface AuthModalProps {
@@ -71,23 +72,18 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const sendSignupCode = async (normalizedEmail: string) => {
     const trimmedName = fullName.trim();
 
-    const response = await fetch("/api/auth/send-signup-code", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: getAuthCallbackUrl(),
+        data: {
+          full_name: trimmedName,
+        },
       },
-      body: JSON.stringify({
-        email: normalizedEmail,
-        fullName: trimmedName,
-        password,
-      }),
     });
 
-    const result = (await response.json().catch(() => null)) as { error?: string } | null;
-
-    if (!response.ok) {
-      throw new Error(result?.error ?? "We couldn't send your code. Please try again.");
-    }
+    if (otpError) throw otpError;
 
     setPendingSignupEmail(normalizedEmail);
     setSignupStep("code");
