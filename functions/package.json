@@ -1,0 +1,13 @@
+{
+  "name": "inchouf-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.111.0",
+    "firebase-functions": "^6.4.1",
+    "nodemailer": "^9.0.3"
+  }
+}

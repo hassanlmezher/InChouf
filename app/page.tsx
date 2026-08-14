@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as LucideIcons from "lucide-react";
 import { Search, MapPin, Star, ChevronLeft, ChevronRight, Bell, Menu, X, LogIn, LogOut } from "lucide-react";
-import { fetchMainCategories, fetchFeaturedPicks, Category, LocationWithCategory } from "@/lib/data";
+import { fetchMainCategories, fetchFeaturedPicks, fetchSearchableLocations, Category, LocationWithCategory } from "@/lib/data";
 import { getCategoryIconName } from "@/lib/category-icons";
 import { supabase } from "@/lib/supabase";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -19,8 +21,11 @@ const DynamicIcon = ({ name, className, style }: { name: string; className?: str
 
 
 export default function Home() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredPicks, setFeaturedPicks] = useState<LocationWithCategory[]>([]);
+  const [searchablePlaces, setSearchablePlaces] = useState<LocationWithCategory[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -41,12 +46,14 @@ export default function Home() {
 
   useEffect(() => {
     async function loadData() {
-      const [cats, picks] = await Promise.all([
+      const [cats, picks, places] = await Promise.all([
         fetchMainCategories(),
         fetchFeaturedPicks(),
+        fetchSearchableLocations(),
       ]);
       setCategories(cats);
       setFeaturedPicks(picks);
+      setSearchablePlaces(places);
       setLoading(false);
     }
     loadData();
@@ -89,12 +96,64 @@ export default function Home() {
     });
   };
 
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const searchResults = useMemo(() => {
+    if (!normalizedSearchQuery) {
+      return { categories: [], places: [] };
+    }
+
+    const categoryMatches = categories
+      .filter((category) => category.name.toLowerCase().includes(normalizedSearchQuery))
+      .slice(0, 4);
+
+    const placeMatches = searchablePlaces
+      .filter((place) => {
+        const name = place.name.toLowerCase();
+        const area = place.address_or_area?.toLowerCase() ?? "";
+        const categoryName = place.categories?.name?.toLowerCase() ?? "";
+
+        return (
+          name.includes(normalizedSearchQuery) ||
+          area.includes(normalizedSearchQuery) ||
+          categoryName.includes(normalizedSearchQuery)
+        );
+      })
+      .slice(0, 4);
+
+    return { categories: categoryMatches, places: placeMatches };
+  }, [categories, normalizedSearchQuery, searchablePlaces]);
+
+  const hasSearchResults = searchResults.categories.length > 0 || searchResults.places.length > 0;
+  const getCategoryHref = (slug: string) => `/category?slug=${encodeURIComponent(slug)}`;
+  const getPlaceCategoryHref = (place: LocationWithCategory) => {
+    const category = categories.find((cat) => cat.category_id === place.category_id);
+    return category ? getCategoryHref(category.slug) : "/categories";
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (searchResults.categories[0]) {
+      router.push(getCategoryHref(searchResults.categories[0].slug));
+      return;
+    }
+
+    if (searchResults.places[0]) {
+      router.push(getPlaceCategoryHref(searchResults.places[0]));
+      return;
+    }
+
+    if (normalizedSearchQuery) {
+      router.push("/categories");
+    }
+  };
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-50 font-sans">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 pt-16 font-sans">
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
       {/* ── NAVBAR ── */}
-      <nav className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100 md:px-8">
+      <nav className="fixed inset-x-0 top-0 z-50 flex min-h-16 items-center justify-between gap-3 border-b border-slate-100 bg-white px-4 py-3 shadow-sm md:px-8">
 
         {/* Logo */}
         <Link href="/" className="min-w-0 flex-shrink-0 flex items-center gap-2">
@@ -237,20 +296,84 @@ export default function Home() {
           </p>
 
           {/* Search bar */}
-          <div className="relative flex w-full max-w-2xl items-center gap-1.5 rounded-full bg-white p-1.5 shadow-2xl sm:gap-2 md:p-2">
-            <Search className="ml-2 flex-shrink-0 text-slate-400 sm:ml-3" size={20} />
-            <input
-              type="text"
-              placeholder="Search spots"
-              className="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 sm:px-2 md:py-3.5 md:text-base"
-            />
-            <button
-              className="flex-shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all sm:px-5 md:px-7 md:py-3 md:text-base"
-              style={{ background: "linear-gradient(135deg, #2abf9e, #1a9e83)" }}
-            >
-              Explore<span className="hidden sm:inline"> Now</span>
-            </button>
-          </div>
+          <form onSubmit={handleSearchSubmit} className="relative w-full max-w-2xl">
+            <div className="relative flex w-full items-center gap-1.5 rounded-full bg-white p-1.5 shadow-2xl sm:gap-2 md:p-2">
+              <Search className="ml-2 flex-shrink-0 text-slate-400 sm:ml-3" size={20} />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search spots"
+                aria-label="Search categories and places"
+                className="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 sm:px-2 md:py-3.5 md:text-base"
+              />
+              <button
+                type="submit"
+                className="flex-shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all sm:px-5 md:px-7 md:py-3 md:text-base"
+                style={{ background: "linear-gradient(135deg, #2abf9e, #1a9e83)" }}
+              >
+                Explore<span className="hidden sm:inline"> Now</span>
+              </button>
+            </div>
+
+            {normalizedSearchQuery && (
+              <div className="absolute left-0 right-0 top-full z-30 mt-3 overflow-hidden rounded-lg bg-white text-left shadow-2xl ring-1 ring-slate-100">
+                {hasSearchResults ? (
+                  <div className="max-h-80 overflow-y-auto py-2">
+                    {searchResults.categories.length > 0 && (
+                      <div className="py-1">
+                        <p className="px-4 pb-1 text-xs font-bold uppercase tracking-wide text-slate-400">Categories</p>
+                        {searchResults.categories.map((category) => (
+                          <Link
+                            key={category.category_id}
+                            href={getCategoryHref(category.slug)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700"
+                          >
+                            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+                              <DynamicIcon name={getCategoryIconName(category.icon_name)} className="h-5 w-5" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-bold">{category.name}</span>
+                              <span className="block text-xs text-slate-400">
+                                {category.place_count} {category.place_count === 1 ? "place" : "places"}
+                              </span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
+                    {searchResults.places.length > 0 && (
+                      <div className="border-t border-slate-100 py-1">
+                        <p className="px-4 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-slate-400">Places</p>
+                        {searchResults.places.map((place) => (
+                          <Link
+                            key={place.location_id}
+                            href={getPlaceCategoryHref(place)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700"
+                          >
+                            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-teal-600">
+                              <MapPin className="h-5 w-5" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-bold">{place.name}</span>
+                              <span className="block truncate text-xs text-slate-400">
+                                {place.categories?.name ?? "Place"}{place.address_or_area ? ` · ${place.address_or_area}` : ""}
+                              </span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-4 py-4 text-sm font-medium text-slate-500">
+                    No matches found.
+                  </div>
+                )}
+              </div>
+            )}
+          </form>
 
 
         </section>

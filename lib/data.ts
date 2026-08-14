@@ -110,6 +110,26 @@ export async function fetchLocationsByCategorySlug(slug: string): Promise<Locati
   return data as LocationWithCategory[]
 }
 
+export async function fetchSearchableLocations(): Promise<LocationWithCategory[]> {
+  const { data, error } = await supabase
+    .from('locations')
+    .select(`
+      *,
+      categories (
+        name
+      )
+    `)
+    .order('name', { ascending: true })
+    .limit(100)
+
+  if (error) {
+    console.error('Error fetching searchable locations:', error)
+    return []
+  }
+
+  return data as LocationWithCategory[]
+}
+
 export async function fetchFeaturedPicks() {
   const { data, error } = await supabase
     .from('locations')
