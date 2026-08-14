@@ -386,7 +386,7 @@ export default function Home() {
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Explore by Category</h2>
               <p className="text-slate-500 text-sm mt-1">Browse what the Chouf has to offer</p>
             </div>
-            {categories.length > 7 && (
+            {categories.length > 0 && (
               <Link href="/categories" className="hidden md:flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">
                 View All <ChevronRight size={16} />
               </Link>
@@ -394,9 +394,9 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8">
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-5 sm:px-5 md:mx-0 md:px-0">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="h-36 min-w-36 animate-pulse rounded-lg bg-white shadow-sm ring-1 ring-slate-100 md:min-w-0" />
+                <div key={i} className="h-36 min-w-36 animate-pulse rounded-lg bg-white shadow-sm ring-1 ring-slate-100 md:min-w-40 lg:min-w-44" />
               ))}
             </div>
           ) : categories.length > 0 ? (
@@ -404,13 +404,13 @@ export default function Home() {
               <div className="relative">
                 <div
                   ref={categoryScrollRef}
-                  className="category-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-3 pt-2 sm:-mx-5 sm:px-5 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-8"
+                  className="category-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 pt-2 sm:-mx-5 sm:px-5 md:mx-0 md:px-0"
                 >
-                  {categories.slice(0, 7).map((cat) => (
+                  {categories.map((cat) => (
                     <Link
                       key={cat.category_id}
                       href={`/category?slug=${encodeURIComponent(cat.slug)}`}
-                      className="category-option group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none md:min-w-0"
+                      className="category-option group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none md:min-w-40 lg:min-w-44"
                     >
                       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
                         <DynamicIcon
@@ -427,29 +427,16 @@ export default function Home() {
                       )}
                     </Link>
                   ))}
-                  <Link
-                    href="/categories"
-                    className="category-option group flex h-36 min-w-36 snap-start flex-col items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-lg focus:outline-none md:min-w-0"
-                  >
-                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 transition-colors duration-300 group-hover:bg-teal-100">
-                      <DynamicIcon
-                        name="MoreHorizontal"
-                        className="h-7 w-7 transition-transform duration-300 group-hover:scale-110"
-                        style={{ color: "#2abf9e" } as React.CSSProperties}
-                      />
-                    </div>
-                    <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-tight text-slate-900">More</h3>
-                  </Link>
                 </div>
 
                 {canScrollCategoriesLeft && (
                   <>
-                    <div className="pointer-events-none absolute inset-y-0 -left-4 w-14 bg-linear-to-r from-slate-50 via-slate-50/90 to-transparent md:hidden" />
+                    <div className="pointer-events-none absolute inset-y-0 -left-4 w-14 bg-linear-to-r from-slate-50 via-slate-50/90 to-transparent" />
                     <button
                       type="button"
                       onClick={() => scrollCategories("left")}
                       aria-label="Scroll categories left"
-                      className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95 md:hidden"
+                      className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95"
                     >
                       <ChevronLeft size={20} />
                     </button>
@@ -458,12 +445,12 @@ export default function Home() {
 
                 {canScrollCategoriesRight && (
                   <>
-                    <div className="pointer-events-none absolute inset-y-0 -right-4 w-16 bg-linear-to-l from-slate-50 via-slate-50/90 to-transparent md:hidden" />
+                    <div className="pointer-events-none absolute inset-y-0 -right-4 w-16 bg-linear-to-l from-slate-50 via-slate-50/90 to-transparent" />
                     <button
                       type="button"
                       onClick={() => scrollCategories("right")}
                       aria-label="Scroll categories right"
-                      className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95 md:hidden"
+                      className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-teal-100 bg-white text-teal-600 shadow-lg transition-transform active:scale-95"
                     >
                       <ChevronRight className="animate-pulse" size={20} />
                     </button>
