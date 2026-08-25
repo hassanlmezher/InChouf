@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import * as LucideIcons from "lucide-react";
 import { ArrowLeft, Compass, MapPin, Search, Star } from "lucide-react";
 import { Category, LocationWithCategory, fetchCategoryBySlug, fetchLocationsByCategorySlug } from "@/lib/data";
 import { getCategoryIconName } from "@/lib/category-icons";
-import { getCategoryVideoSrc } from "@/lib/category-videos";
+import { getCategoryImageSrc } from "@/lib/category-videos";
 
 const DynamicIcon = ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
   const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
@@ -64,46 +65,47 @@ export default function CategoryPageClient() {
           <div className="mt-6 h-64 animate-pulse rounded-lg bg-white/80 shadow-sm" />
         ) : category ? (
           <>
-            <header className="relative -mx-4 mt-3 overflow-hidden bg-slate-950 px-4 py-10 text-white sm:-mx-5 sm:px-5 md:mx-0 md:rounded-lg md:px-8 md:py-12">
-              <video
-                key={category.slug}
+            <header className="relative left-1/2 mt-3 w-screen -translate-x-1/2 overflow-hidden bg-slate-950 py-12 text-white md:py-16">
+              <Image
                 className="absolute inset-0 h-full w-full object-cover"
-                src={getCategoryVideoSrc(category)}
-                autoPlay
-                muted
-                loop
-                playsInline
+                src={getCategoryImageSrc(category)}
+                alt=""
+                fill
+                priority
+                sizes="100vw"
                 aria-hidden="true"
               />
               <div className="absolute inset-0 bg-linear-to-r from-slate-950/90 via-slate-950/65 to-slate-950/25" />
               <div className="absolute inset-0 bg-linear-to-t from-slate-950/55 via-transparent to-slate-950/20" />
 
-              <div className="relative grid gap-8 md:grid-cols-[minmax(0,1fr)_22rem] md:items-end">
-                <div className="min-w-0">
-                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/14 shadow-lg shadow-black/10 backdrop-blur">
-                    <DynamicIcon
-                      name={getCategoryIconName(category.icon_name)}
-                      className="h-9 w-9"
-                      style={{ color: "#7ee9d1" } as React.CSSProperties}
-                    />
+              <div className="relative mx-auto max-w-7xl px-4 sm:px-5 md:px-8">
+                <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_22rem] md:items-end">
+                  <div className="min-w-0">
+                    <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/14 shadow-lg shadow-black/10 backdrop-blur">
+                      <DynamicIcon
+                        name={getCategoryIconName(category.icon_name)}
+                        className="h-9 w-9"
+                        style={{ color: "#7ee9d1" } as React.CSSProperties}
+                      />
+                    </div>
+                    <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-teal-100">Category guide</p>
+                    <h1 className="max-w-3xl break-words text-4xl font-extrabold leading-tight text-white md:text-6xl">{category.name}</h1>
+                    <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">
+                      Browse places around Chouf, compare options, and find the right spot without digging through a crowded directory.
+                    </p>
                   </div>
-                  <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-teal-100">Category guide</p>
-                  <h1 className="max-w-3xl break-words text-4xl font-extrabold leading-tight text-white md:text-6xl">{category.name}</h1>
-                  <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">
-                    Browse places around Chouf, compare options, and find the right spot without digging through a crowded directory.
-                  </p>
-                </div>
 
-                <div className="rounded-lg bg-white/95 p-2 shadow-2xl shadow-slate-950/20">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={19} />
-                    <input
-                      type="search"
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search places"
-                      className="h-12 w-full rounded-md bg-transparent pl-11 pr-4 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
-                    />
+                  <div className="rounded-lg bg-white/95 p-2 shadow-2xl shadow-slate-950/20">
+                    <div className="relative">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={19} />
+                      <input
+                        type="search"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Search places"
+                        className="h-12 w-full rounded-md bg-transparent pl-11 pr-4 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

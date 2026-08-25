@@ -110,10 +110,17 @@ export function getCategoryVideoSrc(category: Pick<Category, "name" | "slug" | "
     .map(normalizeCategoryText)
     .filter(Boolean)
     .join(" ");
+  const searchableWords = new Set(searchableText.split(" "));
 
   return (
     categoryVideoRules.find((rule) =>
-      rule.keywords.some((keyword) => searchableText.includes(keyword))
+      rule.keywords.some((keyword) => searchableWords.has(keyword))
     )?.src ?? "/category-videos/chouf-default.mp4"
   );
+}
+
+export function getCategoryImageSrc(category: Pick<Category, "name" | "slug" | "icon_name">) {
+  return getCategoryVideoSrc(category)
+    .replace("/category-videos/", "/category-images/")
+    .replace(/\.mp4$/, ".webp");
 }
